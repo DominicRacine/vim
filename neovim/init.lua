@@ -1,33 +1,27 @@
-local fn = vim.fn
-DATA_PATH = fn.stdpath 'data'
-local install_path = DATA_PATH .. '/site/pack/packer/start/packer.nvim'
-if fn.empty(fn.glob(install_path)) > 0 then
-  packer_bootstrap = fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+-- Install packer
+local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
+local is_bootstrap = false
+if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+  is_bootstrap = true
+  vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
+  vim.cmd [[packadd packer.nvim]]
 end
 
-vim.api.nvim_exec([[
-  augroup packer_user_config
-    autocmd!
-    autocmd BufWritePost plugins.lua source init.lua | PackerCompile
-  augroup end
-  ]],
-  false
-)
+-- stylua: ignore start
+require('packer').startup(function(use)
+  use 'wbthomason/packer.nvim'                                                         -- Package manager
 
-return require('packer').startup(function(use)
+  -- Fuzzy Finder (files, lsp, etc)
+  use { 'nvim-telescope/telescope.nvim', branch = '0.1.x', requires = { 'nvim-lua/plenary.nvim' } }
 
-use 'wbthomason/packer.nvim'    -- Package manager
-use 'nvim-lua/plenary.nvim'     -- Lua Plugin Testing Library
-use {
-    'nvim-telescope/telescope.nvim',
-    requires = { 'nvim-lua/plenary.nvim' }
-}
+  -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
+  use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable "make" == 1 }
 
-
-if packer_bootstrap then
+  if is_bootstrap then
     require('packer').sync()
   end
 end)
+-- stylua: ignore end
 
 --options
 vim.o.tabstop=4
@@ -64,11 +58,11 @@ vim.keymap.set("i", "jj", "<Esc>")
 vim.keymap.set("i", "<c-h>", "<Left>")
 vim.keymap.set("i", "<c-l>", "<Right>")
 vim.keymap.set("i", "<c-k>", "<Up>")
-vim.keymap.set("i", "<c-j>", "<Down>"
+vim.keymap.set("i", "<c-j>", "<Down>")
 
 -- Remap space as leader key
 vim.keymap.set('', '<Space>', '<Nop>', { silent = true })
 vim.g.mapleader = ' '
-vim.g.maplocalleader = ' ')
+vim.g.maplocalleader = ' '
 
 vim.keymap.set("<leader>p", "\"_dP")
